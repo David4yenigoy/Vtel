@@ -6,8 +6,8 @@ import telegram
 # access = "your-access"
 # secret = "your-secret"
 
-bot = telegram.Bot(token='2121725792:AAHyurjL7O9sUU63mPlsH864CdesK9d0bjo')
-chat_id = 1860357696
+bot = telegram.Bot(token='*******')
+chat_id = ******
 
 
 def get_target_price(ticker, k):

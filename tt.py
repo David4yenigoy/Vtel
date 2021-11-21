@@ -9,76 +9,34 @@ import telegram
 bot = telegram.Bot(token='*******')
 chat_id = ******
 
+def rsi(ohlc: pandas.DataFrame, period: int = 14):
+    delta = ohlc["close"].diff()
+    ups, downs = delta.copy(), delta.copy()
+    ups[ups < 0] = 0 
+    downs[downs > 0] = 0
+    
+    AU = ups.ewm(com = period-1, min_periods = period).mean() 
+    AD = downs.abs().ewm(com = period-1, min_periods = period).mean() 
+    RS = AU/AD
 
-def get_target_price(ticker, k):
-    """변동성 돌파 전략으로 매수 목표가 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
-    target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
-    return target_price
+    return pandas.Series(100 - (100/(1 + RS)), name = "RSI")
 
-def get_start_time(ticker):
-    """시작 시간 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
-    start_time = df.index[0]
-    return start_time
-
-def get_ma15(ticker):
-    """15일 이동 평균선 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=15)
-    ma15 = df['close'].rolling(15).mean().iloc[-1]
-    return ma15
-
-def get_balance(ticker):
-    """잔고 조회"""
-    balances = upbit.get_balances()
-    for b in balances:
-        if b['currency'] == ticker:
-            if b['balance'] is not None:
-                return float(b['balance'])
-            else:
-                return 0
-    return 0
-
-def get_current_price(ticker):
-    """현재가 조회"""
-    return pyupbit.get_orderbook(ticker=ticker)["orderbook_units"][0]["ask_price"]
-
-# 로그인
-# upbit = pyupbit.Upbit(access, secret)
-# print("autotrade start")
-
-# 자동매매 시작
 
 coinlist = pyupbit.get_tickers(fiat="KRW")
-while True:
-    for i in range(len(coinlist)):
-        try:
-            now = datetime.datetime.now()
-            start_time = get_start_time(coinlist[1])
-            end_time = start_time + datetime.timedelta(days=1)
 
-            if start_time < now < end_time - datetime.timedelta(seconds=10):
-                target_price = get_target_price(coinlist[1], 0.5)
-                ma15 = get_ma15(coinlist[1])
-                current_price = get_current_price(coinlist[1])
-                if target_price < current_price and ma15 < current_price:
-                    print(str(coinlist[i]) + " < Volatily Breakout >" )   
-                    sendMsg = str(coinlist[i]) + "< Volatily Breakout >" 
-                    bot.sendMessage(chat_id=chat_id, text=sendMsg)
-                    # krw = get_balance("KRW")
-                    # if krw > 5000:
-                    #     upbit.buy_market_order(coinlist[1], krw*0.9995)
-            else:
-                print("Peace")
-                # btc = get_balance("BTC")
-                # if btc > 0.00008:
-                #     upbit.sell_market_order(coinlist[1], btc*0.9995)
+while(True):
+    for i in range(len(coinlist)):
+        data = pyupbit.get_ohlcv(ticker=coinlist[i], interval="minute30")
+        now_rsi = rsi(data, 14).iloc[-1]
+        past_rsi = rsi(data, 14).iloc[-2]
+        if now_rsi < 28 and now_rsi < past_rsi :
+            sendMsg = str(coinlist[i]) + "< RSI > :" + str(now_rsi)
+            print(coinlist[i], datetime.datetime.now(), "< RSI 30 > :", now_rsi)
+            bot.sendMessage(chat_id=chat_id, text=sendMsg)
             time.sleep(1)
-        except Exception as e:
-            print(e)
-            time.sleep(1)
-        
-        
+        else :
+            pass 
+        time.sleep(1)    
                 
                
                 

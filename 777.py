@@ -85,8 +85,8 @@ def sell(coin):
 
 
 # Send Msg
-bot = telegram.Bot(token='2110067438:AAF8-6tHX0u2HrrH1wmEgygEsa389gub3n8')
-chat_id = 1860357696
+bot = telegram.Bot(token='111111111111111111')
+chat_id = 11111111111
 
 # 이용할 코인 리스트 
 coinlist_all = pyupbit.get_tickers(fiat="KRW")

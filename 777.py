@@ -131,7 +131,7 @@ while(True):
                 dolpa_120 = True
                 sendMsg = str(coinlist[i]), "< 120 Dolpa Breakout >" 
                 bot.sendMessage(chat_id=chat_id, text=sendMsg)
-            elif cur_price > round(now_120_ma60*1.01, 4) :
+            elif cur_price < round(now_120_ma60*1.01, 4) :
                 dolpa_120 = False
             elif dolpa_120 == True and now_rsi_60 >= 70 :   # and cur_price >= profit_price :
                 # sell(coinlist[i])
